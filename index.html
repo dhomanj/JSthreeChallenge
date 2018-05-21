@@ -1,0 +1,114 @@
+<!Doctype HTML>
+<html>
+    <head>
+        <title>Challenge by Jarel Dhoman</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    </head>
+    <body>
+       <script src="js/three.js"></script>
+       <script src="js/OrbitControls.js"></script>
+       <script src="js/GLTFLoader.js"></script>
+       <script>
+           
+           //creates information that will be displayed through hotspot
+           var info = document.createElement( 'div' );
+           info.id = "description";
+           info.style.position = 'absolute';
+           info.style.top = '60px';
+           info.style.width = '100%';
+           info.style.textAlign = 'center';
+           info.style.display = 'none';
+           
+           info.innerHTML = '<h3>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."</h3> <h4> p.s i hope your having a wonderful day :) </h4>';
+           
+           document.body.appendChild( info )  
+           
+           //used to store objects present on the scene for refrence with onclick event
+           var objects = [];
+           
+           
+           
+           
+           var scene = new THREE.Scene();
+           scene.background = new THREE.Color( 0xf0f0f0 );
+           camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+           camera.position.set(0, -100, 200);
+           
+           renderer = new THREE.WebGLRenderer();
+           renderer.setSize( window.innerWidth, window.innerHeight );
+           document.body.appendChild(renderer.domElement);
+                    
+           controls = new THREE.OrbitControls( camera, renderer.domElement );
+           
+           var ambientLight = new THREE.AmbientLight( 0xFFFFFF, 0.9 );
+           scene.add(ambientLight);
+           
+           // check when the browser size has changed and adjust the camera accordingly
+           window.addEventListener( 'resize', function( )
+			{
+		      	var WIDTH = window.innerWidth;
+				var HEIGHT = window.innerHeight;
+		      	renderer.setSize( WIDTH, HEIGHT );
+		      	camera.aspect = WIDTH / HEIGHT;
+		      	camera.updateProjectionMatrix( );
+	    	} );
+           
+           
+           //Used to load model and also hotspot that will later be utilized to display text
+           var loader = new THREE.GLTFLoader();
+           
+                loader.load(
+               'assets/scene.gltf',
+               function ( data ) {
+                   
+                   gltf = data;
+                   var object = gltf.scene;
+                   
+                   scene.add( object );
+                   objects.push(object);
+                   
+                   var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+                   var material = new THREE.MeshPhongMaterial( {color: 0xFF0000} );
+                   var sphere = new THREE.Mesh( geometry, material );
+                   scene.add( sphere );
+                   objects.push(sphere);
+                   
+               });
+           
+           
+           //raycasts mouse to be used on the 3d plane for onclick event
+           var raycaster = new THREE.Raycaster();
+           var mouse = new THREE.Vector2();
+           
+           document.addEventListener( 'mousedown', function( event ) {
+           mouse.x = ( ( event.clientX - renderer.domElement.offsetLeft ) / renderer.domElement.clientWidth ) * 2 - 1;
+           mouse.y = - ( ( event.clientY - renderer.domElement.offsetTop ) / renderer.domElement.clientHeight ) * 2 + 1;
+            raycaster.setFromCamera( mouse, camera );
+            intersects = raycaster.intersectObjects( objects );
+                if ( intersects.length > 0 ) {
+                    
+                var description = document.getElementById("description");
+               if (description.style.display === "none"){
+                   
+                   description.style.display = "block";
+               }
+               else{
+                   description.style.display = "none";
+               }
+                    
+                }
+            
+            }, false );
+           
+           //Animation Loop
+           var animate = function(){
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+           
+            animate();
+           
+        </script>
+    </body>
+</html>
